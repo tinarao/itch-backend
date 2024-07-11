@@ -19,7 +19,7 @@ export class UserService {
     const sameCredsUser = await this.userRepository.findOne({
       where: [
         { email: createUserDto.email },
-        { username: createUserDto.username }
+        { username: createUserDto.username.toLowerCase() }
       ]
     })
 
@@ -33,7 +33,7 @@ export class UserService {
     const password = createUserDto.password;
     const passwordHash = await bcrypt.hash(password, saltOrRounds);
 
-    doc.username = createUserDto.username
+    doc.username = createUserDto.username.toLowerCase()
     doc.email = createUserDto.email
     doc.password = passwordHash
 
@@ -58,6 +58,12 @@ export class UserService {
     if (!user) return null
 
     return user
+  }
+
+  async findMe(username: string) {
+    return this.userRepository.findOne({
+      where: { username: username }
+    })
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
