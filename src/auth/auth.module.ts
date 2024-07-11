@@ -23,7 +23,7 @@ import { AuthGuard } from './auth.guard';
       useFactory: (configService: ConfigService) => ({
         global: true,
         secret: configService.get("JWT_SECRET"),
-        signOptions: { expiresIn: '2d' }
+        signOptions: { expiresIn: '180d' }
       })
     })
   ],

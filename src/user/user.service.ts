@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt'
+import { Asset } from 'src/assets/entities/asset.entity';
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,36 @@ export class UserService {
     doc.password = passwordHash
 
     return await this.userRepository.save(doc)
+  }
+
+  async getAssetsByUser(id: number): Promise<Asset[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+      relations: { assets: true }
+    })
+    if (!user) throw new NotFoundException("User does not exist")
+
+    return user.assets
+  }
+
+  async getUserById(id: number) {
+    return await this.userRepository.findOne({
+      where: { id: id }
+    })
+  }
+
+  async addAssetToUser(id: number, asset: Asset): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+      select: { assets: true },
+      relations: { assets: true }
+    })
+
+    if (!user) throw new NotFoundException("User does not exist")
+
+    user.assets.push(asset)
+
+    return await this.userRepository.save(user)
   }
 
   findAll() {

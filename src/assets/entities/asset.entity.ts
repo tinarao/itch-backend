@@ -1,3 +1,4 @@
+import { Genres } from "src/helpers/assets.enum";
 import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -8,6 +9,9 @@ export class Asset {
 
     @Column()
     name: string
+
+    @Column({ nullable: true })
+    description: string
 
     @ManyToOne(() => User, (user) => user.assets)
     author: User
@@ -20,6 +24,18 @@ export class Asset {
 
     @Column({ nullable: true })
     fileURL: string
+
+    @Column({ nullable: true })
+    coverPictureUrl: string
+
+    @Column({ default: false })
+    public: boolean
+
+    @Column("text", { array: true, nullable: true })
+    imagesURLs: string[]
+
+    @Column({ type: "enum", enum: Genres, default: Genres.PIXEL_ART })
+    genre: Genres
 
     @CreateDateColumn()
     createdAt: Date
