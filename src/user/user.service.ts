@@ -37,6 +37,7 @@ export class UserService {
     doc.username = createUserDto.username.toLowerCase()
     doc.email = createUserDto.email
     doc.password = passwordHash
+    doc.role = createUserDto.role
 
     return await this.userRepository.save(doc)
   }

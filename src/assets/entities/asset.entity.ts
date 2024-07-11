@@ -1,6 +1,6 @@
 import { Genres } from "src/helpers/assets.enum";
 import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Asset {
@@ -13,7 +13,8 @@ export class Asset {
     @Column({ nullable: true })
     description: string
 
-    @ManyToOne(() => User, (user) => user.assets)
+    @ManyToOne(() => User, (user) => user.assets, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "author_id" })
     author: User
 
     @Column({ default: false })
