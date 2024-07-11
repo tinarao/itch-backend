@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UserService } from 'src/user/user.service';
 import { Asset } from './entities/asset.entity';
 import { NotFoundError } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
+import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
 
 @Injectable()
 export class AssetsService {
@@ -47,8 +48,24 @@ export class AssetsService {
     return `This action returns all assets`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asset`;
+  async findOne(id: number): Promise<Asset> {
+    const asset = await this.assetRepository.findOne(
+      { where: { id: id } }
+    )
+
+    if (!asset) {
+      throw new NotFoundException("Resourse does not exist")
+    }
+
+    if (!asset.public) {
+      throw new UnauthorizedException("Автор закрыл доступ к ресурсу")
+    }
+
+    return asset
+  }
+
+  async findMyPostById(id: number) {
+    return this.assetRepository.findOne({ where: { id: id } })
   }
 
   async getAssetsByUser(id: number): Promise<Asset[]> {
@@ -60,7 +77,20 @@ export class AssetsService {
   //   return `This action updates a #${id} asset`;
   // }
 
-  remove(id: number) {
-    return `This action removes a #${id} asset`;
+  async remove(id: number, username: string): Promise<DeleteResult> {
+    const asset = await this.assetRepository.findOne({ where: { id: id }, relations: { author: true } })
+    if (!asset) throw new NotFoundException("Asset does not exist")
+    if (asset.author.username !== username) throw new ForbiddenException("Forbidden");
+
+    return await this.assetRepository.delete(asset.id)
+  }
+
+  async changeVisibility(id: number, dto: ChangeVisibilityDTO, username: string): Promise<Asset> {
+    const asset = await this.assetRepository.findOne({ where: { id: id }, relations: { author: true } })
+    if (!asset) throw new NotFoundException("Asset does not exist");
+    if (asset.author.username !== username) throw new ForbiddenException("Forbidden");
+
+    asset.public = dto.public
+    return await this.assetRepository.save(asset)
   }
 }

@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Request, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { GetAssetsProfileDTO } from './dto/get-assets.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/helpers/public.decorator';
+import { DeleteResult } from 'typeorm';
+import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
 
 @Controller('assets')
 @ApiTags('Assets')
@@ -15,7 +16,7 @@ export class AssetsController {
   @UsePipes(new ValidationPipe())
   create(
     @Body() createAssetDto: CreateAssetDto,
-    @Request() req
+    @Request() req: Request
   ) {
     const username = req['user'].username
     return this.assetsService.create(createAssetDto, username);
@@ -26,9 +27,15 @@ export class AssetsController {
     return this.assetsService.findAll();
   }
 
-  @Get('id')
+  @Get('id/:id')
+  @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.assetsService.findOne(id);
+  }
+
+  @Get('my/:id')
+  findMyPostById(@Param('id', ParseIntPipe) id: number) {
+    return this.assetsService.findMyPostById(id)
   }
 
   @Get('profile')
@@ -37,13 +44,23 @@ export class AssetsController {
     return this.assetsService.getAssetsByUser(userId);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAssetDto: UpdateAssetDto) {
-  //   return this.assetsService.update(+id, updateAssetDto);
-  // }
+  @ApiOperation({ summary: "Endpoint that can change visibility of asset" })
+  @Patch('visibility/:id')
+  async changeVisibility(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() changeVisibilityDTO: ChangeVisibilityDTO,
+    @Request() req: Request
+  ) {
+    const username = req['user'].username
+    return this.assetsService.changeVisibility(id, changeVisibilityDTO, username)
+  }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.assetsService.remove(+id);
+  remove(
+    @Param('id', ParseIntPipe) id: string,
+    @Request() req: Request
+  ): Promise<DeleteResult> {
+    const username = req['user'].username
+    return this.assetsService.remove(+id, username);
   }
 }
