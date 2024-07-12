@@ -23,29 +23,46 @@ export class AssetsService {
       throw new BadRequestException("Wrong user credentials provided")
     }
 
-    const assetDoc = new Asset()
-    assetDoc.name = createAssetDto.name
-    assetDoc.free = createAssetDto.free
-    assetDoc.price = createAssetDto.price
-    assetDoc.fileURL = createAssetDto.fileURL
-    assetDoc.author = user
-    assetDoc.description = createAssetDto.description
+    for (let i = 0; i <= 64; i++) {
+      const assetDoc = new Asset()
+      assetDoc.name = createAssetDto.name
+      assetDoc.free = createAssetDto.free
+      assetDoc.price = createAssetDto.price
+      assetDoc.fileURL = createAssetDto.fileURL
+      assetDoc.author = user
+      assetDoc.description = createAssetDto.description
 
-    if (createAssetDto.genre) {
-      assetDoc.genre = createAssetDto.genre
+      // DELETE THIS
+      assetDoc.public = true
+
+      if (createAssetDto.genre) {
+        assetDoc.genre = createAssetDto.genre
+      }
+      if (createAssetDto.coverPictureUrl) {
+        assetDoc.coverPictureUrl = createAssetDto.coverPictureUrl
+      }
+
+      const savedAsset = await this.assetRepository.save(assetDoc)
+      const savedUser = await this.userService.addAssetToUser(user.id, savedAsset)
     }
-    if (createAssetDto.coverPictureUrl) {
-      assetDoc.coverPictureUrl = createAssetDto.coverPictureUrl
-    }
 
-    const savedAsset = await this.assetRepository.save(assetDoc)
-    const savedUser = await this.userService.addAssetToUser(user.id, savedAsset)
-
-    return { savedAsset, savedUser };
+    return "DONE";
   }
 
-  findAll() {
-    return `This action returns all assets`;
+  async getAssetsForFeed(page: number) {
+    const assets = await this.assetRepository.find({
+      take: 15,
+      skip: 15 * (page - 1),
+      where: { public: true }
+    })
+
+    const count = await this.assetRepository.count({
+      where: { public: true },
+    })
+
+    const left = count - page * 15 > 0 ? count - page * 15 : 0
+
+    return { assets, count: count, left }
   }
 
   async findOne(id: number): Promise<Asset> {

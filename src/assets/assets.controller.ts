@@ -22,9 +22,10 @@ export class AssetsController {
     return this.assetsService.create(createAssetDto, username);
   }
 
-  @Get()
-  findAll() {
-    return this.assetsService.findAll();
+  @Get('feed')
+  @Public()
+  findAll(@Query('page', ParseIntPipe) page: number) {
+    return this.assetsService.getAssetsForFeed(page);
   }
 
   @Get('id/:id')
