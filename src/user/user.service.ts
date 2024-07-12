@@ -92,9 +92,19 @@ export class UserService {
     return user
   }
 
-  async findMe(username: string) {
+  async getUserByUsername(username: string) {
     return this.userRepository.findOne({
-      where: { username: username }
+      where: { username: username },
+      relations: {
+        assets: true,
+        comments: true,
+      }
+    })
+  }
+
+  async getMe(username: string) {
+    return this.userRepository.findOne({
+      where: { username: username },
     })
   }
 

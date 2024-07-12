@@ -6,8 +6,8 @@ import { Public } from 'src/helpers/public.decorator';
 import { DeleteResult } from 'typeorm';
 import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
 
-@Controller('assets')
 @ApiTags('Assets')
+@Controller('assets')
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) { }
 

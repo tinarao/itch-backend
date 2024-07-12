@@ -12,6 +12,7 @@ import { Asset } from './entities/asset.entity';
   imports: [
     UserModule,
     TypeOrmModule.forFeature([Asset])
-  ]
+  ],
+  exports: [AssetsService]
 })
 export class AssetsModule { }

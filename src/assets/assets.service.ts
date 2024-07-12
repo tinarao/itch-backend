@@ -6,6 +6,7 @@ import { NotFoundError } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Injectable()
 export class AssetsService {
@@ -23,30 +24,25 @@ export class AssetsService {
       throw new BadRequestException("Wrong user credentials provided")
     }
 
-    for (let i = 0; i <= 64; i++) {
-      const assetDoc = new Asset()
-      assetDoc.name = createAssetDto.name
-      assetDoc.free = createAssetDto.free
-      assetDoc.price = createAssetDto.price
-      assetDoc.fileURL = createAssetDto.fileURL
-      assetDoc.author = user
-      assetDoc.description = createAssetDto.description
+    const assetDoc = new Asset()
+    assetDoc.name = createAssetDto.name
+    assetDoc.free = createAssetDto.free
+    assetDoc.price = createAssetDto.price
+    assetDoc.fileURL = createAssetDto.fileURL
+    assetDoc.author = user
+    assetDoc.description = createAssetDto.description
 
-      // DELETE THIS
-      assetDoc.public = true
-
-      if (createAssetDto.genre) {
-        assetDoc.genre = createAssetDto.genre
-      }
-      if (createAssetDto.coverPictureUrl) {
-        assetDoc.coverPictureUrl = createAssetDto.coverPictureUrl
-      }
-
-      const savedAsset = await this.assetRepository.save(assetDoc)
-      const savedUser = await this.userService.addAssetToUser(user.id, savedAsset)
+    if (createAssetDto.genre) {
+      assetDoc.genre = createAssetDto.genre
+    }
+    if (createAssetDto.coverPictureUrl) {
+      assetDoc.coverPictureUrl = createAssetDto.coverPictureUrl
     }
 
-    return "DONE";
+    const savedAsset = await this.assetRepository.save(assetDoc)
+    const savedUser = await this.userService.addAssetToUser(user.id, savedAsset)
+
+    return savedAsset
   }
 
   async getAssetsForFeed(page: number) {
@@ -66,9 +62,13 @@ export class AssetsService {
   }
 
   async findOne(id: number): Promise<Asset> {
-    const asset = await this.assetRepository.findOne(
-      { where: { id: id } }
-    )
+    const asset = await this.assetRepository.findOne({
+      where: { id: id },
+      relations: {
+        author: true,
+        comments: true,
+      }
+    })
 
     if (!asset) {
       throw new NotFoundException("Resourse does not exist")
@@ -90,9 +90,13 @@ export class AssetsService {
     return assets
   }
 
-  // update(id: number, updateAssetDto: UpdateAssetDto) {
-  //   return `This action updates a #${id} asset`;
-  // }
+  async addComment(comment: Comment, asset_p: Asset) {
+    const asset = await this.assetRepository.findOne({ where: { id: asset_p.id }, relations: { comments: true } })
+    if (!asset) throw new NotFoundException("Asset does not exist")
+
+    asset.comments.push(comment)
+    return await this.assetRepository.save(asset)
+  }
 
   async remove(id: number, username: string): Promise<DeleteResult> {
     const asset = await this.assetRepository.findOne({ where: { id: id }, relations: { author: true } })

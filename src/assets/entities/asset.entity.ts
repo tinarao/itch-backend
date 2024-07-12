@@ -1,6 +1,7 @@
+import { Comment } from "src/comments/entities/comment.entity";
 import { Genres } from "src/helpers/assets.enum";
 import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Asset {
@@ -16,6 +17,9 @@ export class Asset {
     @ManyToOne(() => User, (user) => user.assets, { onDelete: "CASCADE" })
     @JoinColumn({ name: "author_id" })
     author: User
+
+    @OneToMany(() => Comment, comment => comment.asset)
+    comments: Comment[]
 
     @Column({ default: false })
     free: boolean

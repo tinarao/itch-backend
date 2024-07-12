@@ -1,4 +1,5 @@
 import { Asset } from "src/assets/entities/asset.entity"
+import { Comment } from "src/comments/entities/comment.entity"
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
 export enum Roles {
@@ -26,6 +27,9 @@ export class User {
 
     @OneToMany(() => Asset, asset => asset.author)
     assets: Asset[]
+
+    @OneToMany(() => Comment, comment => comment.author)
+    comments: Comment[]
 
     @CreateDateColumn()
     createdAt: Date

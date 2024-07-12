@@ -19,6 +19,6 @@ export class UserController {
   @Get('me')
   findOne(@Request() req: Request) {
     const user = req['user']
-    return this.userService.findMe(user.username)
+    return this.userService.getMe(user.username)
   }
 }
