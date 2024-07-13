@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Request, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/helpers/public.decorator';
 import { DeleteResult } from 'typeorm';
 import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
@@ -12,8 +12,9 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) { }
 
   @Post()
-  @ApiOperation({ summary: 'Create asset' })
+  @ApiBearerAuth()
   @UsePipes(new ValidationPipe())
+  @ApiOperation({ summary: 'Создание ассета' })
   create(
     @Body() createAssetDto: CreateAssetDto,
     @Request() req: Request
@@ -23,6 +24,7 @@ export class AssetsController {
   }
 
   @Get('feed')
+  @ApiOperation({ summary: "Возвращает ассеты для отображения на главной и в рекомендациях" })
   @Public()
   findAll(@Query('page', ParseIntPipe) page: number) {
     return this.assetsService.getAssetsForFeed(page);
@@ -30,23 +32,28 @@ export class AssetsController {
 
   @Get('id/:id')
   @Public()
+  @ApiOperation({ summary: "Возвращает данные об ассете. Используется для отрисовки на странице ассета" })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.assetsService.findOne(id);
   }
 
   @Get('my/:id')
+  @ApiOperation({ summary: "Возвращает данные об ассете. Используется для отрисовки в профиле" })
+  @ApiBearerAuth()
   findMyPostById(@Param('id', ParseIntPipe) id: number) {
     return this.assetsService.findMyPostById(id)
   }
 
   @Get('profile')
-  @ApiOperation({ summary: 'Get all user\'s assets. Used in profile page' })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Возвращает все ассеты пользователя, в т.ч. скрытые' })
   getAssetsProfile(@Query('userId', ParseIntPipe) userId: number) {
     return this.assetsService.getAssetsByUser(userId);
   }
 
-  @ApiOperation({ summary: "Endpoint that can change visibility of asset" })
   @Patch('visibility/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Меняет видимость ассета. Скрывает / публикует" })
   async changeVisibility(
     @Param('id', ParseIntPipe) id: number,
     @Body() changeVisibilityDTO: ChangeVisibilityDTO,
@@ -57,6 +64,8 @@ export class AssetsController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Удаление ассета" })
   remove(
     @Param('id', ParseIntPipe) id: string,
     @Request() req: Request

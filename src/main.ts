@@ -8,7 +8,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Itch API')
     .setDescription('The itch API description')
-    .setVersion('0.1')
+    .setVersion('0.3')
     .build();
 
   app.setGlobalPrefix('api')
