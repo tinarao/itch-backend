@@ -21,6 +21,9 @@ export class Asset {
     @OneToMany(() => Comment, comment => comment.asset)
     comments: Comment[]
 
+    @Column({ default: 0 })
+    views: number
+
     @Column({ default: false })
     free: boolean
 

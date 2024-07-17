@@ -8,7 +8,6 @@ export class AppController {
   @Public()
   @ApiTags("Healthcheck")
   @ApiOperation({ summary: "Проверка, живой ли сервер" })
-  // @Summar
   healthcheck() {
     return "We are alive"
   }

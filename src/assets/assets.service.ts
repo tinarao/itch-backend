@@ -4,7 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { Asset } from './entities/asset.entity';
 import { NotFoundError } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
+import { Between, DeleteResult, Repository } from 'typeorm';
 import { ChangeVisibilityDTO } from './dto/change-visibility.dto';
 import { Comment } from 'src/comments/entities/comment.entity';
 
@@ -85,8 +85,23 @@ export class AssetsService {
     return this.assetRepository.findOne({ where: { id: id } })
   }
 
-  async getAssetsByUser(id: number): Promise<Asset[]> {
-    const assets = await this.userService.getAssetsByUser(id)
+  async getAssetsByUser(id: number, username: string): Promise<Asset[]> {
+    // TODO: Pagi
+    const assets = await this.userService.getAssetsByUser(id, username)
+    return assets
+  }
+
+  async getMostViewedAssets(): Promise<Asset[]> {
+    const avg = await this.assetRepository.average('views');
+    const max = await this.assetRepository.maximum('views');
+
+    const assets = await this.assetRepository.find({
+      where: {
+        public: true,
+        views: Between(avg, max),
+      },
+    })
+
     return assets
   }
 

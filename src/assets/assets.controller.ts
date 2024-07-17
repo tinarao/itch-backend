@@ -44,11 +44,21 @@ export class AssetsController {
     return this.assetsService.findMyPostById(id)
   }
 
+  @Get('most-viewed')
+  @Public()
+  @ApiOperation({ summary: "Возвращает самые просматриваемые ассеты" })
+  findMostViewedAssets() {
+    return this.assetsService.getMostViewedAssets();
+  }
+
   @Get('profile')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Возвращает все ассеты пользователя, в т.ч. скрытые' })
-  getAssetsProfile(@Query('userId', ParseIntPipe) userId: number) {
-    return this.assetsService.getAssetsByUser(userId);
+  getAssetsProfile(
+    @Query('userId', ParseIntPipe) userId: number,
+    @Request() req: Request
+  ) {
+    return this.assetsService.getAssetsByUser(userId, req['user'].username);
   }
 
   @Patch('visibility/:id')

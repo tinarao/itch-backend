@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -42,12 +42,13 @@ export class UserService {
     return await this.userRepository.save(doc)
   }
 
-  async getAssetsByUser(id: number): Promise<Asset[]> {
+  async getAssetsByUser(id: number, username: string): Promise<Asset[]> {
     const user = await this.userRepository.findOne({
       where: { id: id },
       relations: { assets: true }
     })
     if (!user) throw new NotFoundException("User does not exist")
+    if (user.username !== username) throw new UnauthorizedException();
 
     return user.assets
   }
