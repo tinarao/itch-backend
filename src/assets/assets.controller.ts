@@ -40,8 +40,12 @@ export class AssetsController {
   @Get('my/:id')
   @ApiOperation({ summary: "Возвращает данные об ассете. Используется для отрисовки в профиле" })
   @ApiBearerAuth()
-  findMyPostById(@Param('id', ParseIntPipe) id: number) {
-    return this.assetsService.findMyPostById(id)
+  findMyPostById(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: Request,
+  ) {
+    const username = req['user'].username as string;
+    return this.assetsService.findMyPostById(id, username);
   }
 
   @Get('most-viewed')

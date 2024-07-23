@@ -1,5 +1,6 @@
 import { Comment } from "src/comments/entities/comment.entity";
 import { Genres } from "src/helpers/assets.enum";
+import { Payment } from "src/payments/entities/payment.entity";
 import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -20,6 +21,9 @@ export class Asset {
 
     @OneToMany(() => Comment, comment => comment.asset)
     comments: Comment[]
+
+    @OneToMany(() => Payment, payment => payment.asset)
+    purchases: Payment[]
 
     @Column({ default: 0 })
     views: number

@@ -81,8 +81,17 @@ export class AssetsService {
     return asset
   }
 
-  async findMyPostById(id: number) {
-    return this.assetRepository.findOne({ where: { id: id } })
+  async findMyPostById(assetId: number, username: string) {
+    const asset = await this.assetRepository.findOne({
+      where: { id: assetId },
+      relations: { author: true }
+    });
+
+    if (asset.author.username !== username) {
+      throw new ForbiddenException();
+    }
+
+    return asset;
   }
 
   async getAssetsByUser(id: number, username: string): Promise<Asset[]> {
