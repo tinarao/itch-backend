@@ -10,6 +10,7 @@ import { User } from 'src/user/entities/user.entity';
 import { Asset } from 'src/assets/entities/asset.entity';
 import { NotFoundError } from 'rxjs';
 import { CheckoutDTO } from './dto/checkout.dto';
+import { PaymentCallbackStatuses } from './entities/statuses.enum';
 
 @Injectable()
 export class PaymentsService {
@@ -37,15 +38,45 @@ export class PaymentsService {
   }
 
   async checkout(checkoutDto: CheckoutDTO) {
+    const metadata = checkoutDto.object.metadata;
     console.log(checkoutDto);
-    return checkoutDto;
+    const payment = await this.paymentRepository.findOne({
+      where: { paymentId: metadata.orderId },
+      relations: { buyer: true, asset: true }
+    });
+    if (!payment) throw new NotFoundException();
+
+    if (checkoutDto.event === 'payment.canceled') {
+      payment.status = PaymentStatuses.Cancelled;
+      const savedPayment = await this.paymentRepository.save(payment);
+      return { payment: savedPayment };
+    } else if (checkoutDto.event === "refund.succeeded") {
+      payment.status = PaymentStatuses.Refunded;
+      const savedPayment = await this.paymentRepository.save(payment);
+      return { payment: savedPayment };
+    } else if (checkoutDto.event === 'payment.waiting_for_capture') {
+      payment.status = PaymentStatuses.Pending;
+      const savedPayment = await this.paymentRepository.save(payment);
+      return { payment: savedPayment };
+    } else {
+      // payment.succeeded
+      payment.status = PaymentStatuses.Success;
+      const savedPayment = await this.paymentRepository.save(payment);
+      return { payment: savedPayment };
+    }
   }
 
   async create(createPaymentDto: CreatePaymentDto) {
-    const user = await this.userRepository.findOne({ where: { id: createPaymentDto.userId } });
+    const user = await this.userRepository.findOne({
+      where: { id: createPaymentDto.userId },
+      relations: { orders: true }
+    });
     if (!user) throw new BadRequestException("Invalid user credentials");
 
-    const asset = await this.assetRepository.findOne({ where: { id: createPaymentDto.assetId } });
+    const asset = await this.assetRepository.findOne({
+      where: { id: createPaymentDto.assetId },
+      relations: { purchases: true }
+    });
     if (!asset) throw new BadRequestException("Invalid asset data");
 
     const orderId = nanoid(30);
@@ -85,7 +116,6 @@ export class PaymentsService {
         validateStatus: status => true, // with this thing axios does not throw on !2xx codes
         auth: auth,
         headers: {
-          // TODO:
           'Idempotence-Key': orderId,
         }
       }
@@ -95,26 +125,34 @@ export class PaymentsService {
       throw new InternalServerErrorException();
     }
 
+    const paymentDoc = new Payment();
+    paymentDoc.asset = asset;
+    paymentDoc.buyer = user;
+    paymentDoc.paymentId = orderId;
+    paymentDoc.summ = createPaymentDto.value;
+
+    let savedPayment: Payment;
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    // Transaction
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      savedPayment = await queryRunner.manager.save(paymentDoc);
+      user.orders.push(savedPayment);
+      asset.purchases.push(savedPayment);
+
+      await queryRunner.manager.save(user);
+      await queryRunner.manager.save(asset);
+
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
+
     return res.data;
-
-    // const paymentDoc = new Payment();
-    // paymentDoc.asset = asset;
-    // paymentDoc.buyer = user;
-    // paymentDoc.paymentId = orderId;
-
-    // let savedPayment: Payment;
-
-    // await this.dataSource.transaction(async manager => {
-    //   savedPayment = await manager.save(paymentDoc);
-
-    //   user.orders.push(savedPayment);
-    //   asset.purchases.push(savedPayment);
-
-    //   await manager.save(user);
-    //   await manager.save(asset);
-    // });
-
-    // return res.data;
   }
 }
 

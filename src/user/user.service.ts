@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt'
 import { Asset } from 'src/assets/entities/asset.entity';
+import { Payment } from 'src/payments/entities/payment.entity';
 
 @Injectable()
 export class UserService {
@@ -107,6 +108,18 @@ export class UserService {
     return this.userRepository.findOne({
       where: { username: username },
     })
+  }
+
+  async getUsersOrders(username: string): Promise<Payment[]> {
+    const user = await this.userRepository.findOne({
+      where: { username: username },
+      relations: { orders: true },
+    });
+    if (!user) {
+      throw new NotFoundException("Пользователь не существует");
+    }
+
+    return user.orders;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

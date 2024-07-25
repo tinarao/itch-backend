@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -25,6 +25,7 @@ export class PaymentsController {
 
   @Post("checkout")
   @Public()
+  @HttpCode(200)
   @ApiOperation({ summary: "Получает http-уведомления от кассы" })
   checkoutCallback(@Body() checkoutDTO: CheckoutDTO) {
     return this.paymentsService.checkout(checkoutDTO);

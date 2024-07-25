@@ -6,7 +6,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 export enum PaymentStatuses {
     Pending = "pending",
     Success = "success",
-    Cancelled = "cancelled"
+    Cancelled = "cancelled",
+    Refunded = 'refunded'
 }
 
 @Entity()
@@ -17,11 +18,14 @@ export class Payment {
     @Column({ unique: true })
     paymentId: string;
 
+    @Column()
+    summ: number;
+
     @Column({ type: "enum", enum: PaymentStatuses, default: PaymentStatuses.Pending })
     status: PaymentStatuses
 
     @ManyToOne(() => User, (user) => user.orders, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "author_id" })
+    @JoinColumn({ name: "buyer_id" })
     buyer: User
 
     @ManyToOne(() => Asset, (asset) => asset.purchases, { onDelete: "CASCADE" })
