@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsBooleanString, IsEnum, IsNumber, IsString, IsUrl } from "class-validator";
-import { Genres } from "src/helpers/assets.enum";
+import { IsArray, IsBoolean, IsBooleanString, IsEnum, IsNumber, IsString, IsUrl } from "class-validator";
+import { AssetCategories, AssetPixelSize, Genres } from "src/helpers/assets.enum";
 
 export class CreateAssetDto {
     @ApiProperty()
@@ -31,6 +31,18 @@ export class CreateAssetDto {
 
     @ApiProperty()
     imagesURLs?: string[]
+
+    @ApiProperty()
+    @IsNumber()
+    pixelArtSize?: AssetPixelSize
+
+    @ApiProperty()
+    @IsArray()
+    tags?: string[]
+
+    @ApiProperty()
+    @IsArray()
+    categories: AssetCategories[]
 
     @ApiProperty()
     @IsEnum(Genres)

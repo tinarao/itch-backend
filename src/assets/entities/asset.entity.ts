@@ -1,9 +1,8 @@
 import { Comment } from "src/comments/entities/comment.entity";
-import { Genres } from "src/helpers/assets.enum";
+import { AssetCategories, AssetPixelSize, Genres } from "src/helpers/assets.enum";
 import { Payment } from "src/payments/entities/payment.entity";
 import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-
 @Entity()
 export class Asset {
     @PrimaryGeneratedColumn()
@@ -48,6 +47,15 @@ export class Asset {
 
     @Column({ type: "enum", enum: Genres, default: Genres.PIXEL_ART })
     genre: Genres
+
+    @Column("text", { array: true, nullable: true })
+    tags: string[]
+
+    @Column({ type: "enum", enum: AssetCategories, array: true, default: [AssetCategories.Environment] })
+    categories: AssetCategories[]
+
+    @Column({ nullable: true })
+    pixelArtSize: AssetPixelSize
 
     @CreateDateColumn()
     createdAt: Date
