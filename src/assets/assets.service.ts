@@ -66,7 +66,7 @@ export class AssetsService {
       where: { id: id },
       relations: {
         author: true,
-        comments: true,
+        comments: { author: true },
       }
     })
 

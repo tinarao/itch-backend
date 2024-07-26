@@ -26,6 +26,9 @@ export class User {
     @Column({ select: false })
     password: string
 
+    @Column({ default: "https://ttgzmqukvawummqljnbm.supabase.co/storage/v1/object/public/assets/ph.jpg" })
+    avatar: string
+
     @OneToMany(() => Asset, asset => asset.author)
     assets: Asset[]
 

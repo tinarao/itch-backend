@@ -17,7 +17,7 @@ export class PaymentsController {
     return this.paymentsService.create(createPaymentDto);
   }
 
-  @Get()
+  @Get('details/:orderId')
   @ApiOperation({ summary: "Возвращает статус заказа. Принимает paymentId (не ID заказа, а ID платежа)" })
   getPaymentStatus(@Param('orderId') orderId: string) {
     return this.paymentsService.getPaymentStatus(orderId);

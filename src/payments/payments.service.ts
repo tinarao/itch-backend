@@ -39,7 +39,6 @@ export class PaymentsService {
 
   async checkout(checkoutDto: CheckoutDTO) {
     const metadata = checkoutDto.object.metadata;
-    console.log(checkoutDto);
     const payment = await this.paymentRepository.findOne({
       where: { paymentId: metadata.orderId },
       relations: { buyer: true, asset: true }
