@@ -84,6 +84,8 @@ export class UserService {
         { email: email }
       ],
       select: {
+        id: true,
+        isEmailConfirmed: true,
         email: true,
         username: true,
         password: true

@@ -33,7 +33,6 @@ export class CreateAssetDto {
     imagesURLs?: string[]
 
     @ApiProperty()
-    @IsNumber()
     pixelArtSize?: AssetPixelSize
 
     @ApiProperty()
