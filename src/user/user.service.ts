@@ -74,8 +74,27 @@ export class UserService {
     return await this.userRepository.save(user)
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async attachVerifyCode(userId: number, code: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId }
+    })
+
+    user.verifyCode = code;
+    await this.userRepository.save(user);
+
+    return true;
+  }
+
+  async verify(userId: number): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId }
+    })
+
+    user.verifyCode = null;
+    user.isEmailConfirmed = true;
+    await this.userRepository.save(user);
+
+    return true;
   }
 
   async findOne(email: string): Promise<User | null> {
